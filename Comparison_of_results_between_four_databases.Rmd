@@ -1,0 +1,127 @@
+---
+title: "Comparison of results between four databases"
+author: "Zichong Liu"
+date: "2024-07-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+library(ggplot2)
+```
+
+```{r}
+# 示例数据
+data <- data.frame(
+  group = c("Group A", "Group B", "Group C"),
+  mean = c(10, 15, 12),
+  se = c(1, 1.5, 0.8)
+)
+
+data$lower <- data$mean - data$se
+data$upper <- data$mean + data$se
+
+# 绘制横向箱线图
+ggplot(data, aes(xmin = lower, xmax = upper, y = group, x = mean)) +
+  geom_point(size = 3, shape = 16) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "black") +  # 绘制误差条形
+  labs(x = "Values", y = "Groups") +  # 添加标签
+  ggtitle("Horizontal Boxplot with Mean and SE") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+
+
+```
+
+### Comparison of h2 (LDSC)
+
+```{r}
+h2_ldsc <- read_xlsx("240711_Raw_data_for_R2.xlsx")
+```
+
+```{r}
+head(h2_ldsc)
+```
+
+```{r}
+h2_ldsc$lower_h2_ldsc <- h2_ldsc$`h2 (LDSC)` - h2_ldsc$s.e....4
+h2_ldsc$upper_h2_ldsc <- h2_ldsc$`h2 (LDSC)` + h2_ldsc$s.e....4
+h2_ldsc$lower_liability_h2_ldsc <- h2_ldsc$`Liability h2 (LDSC)` - h2_ldsc$s.e....6
+h2_ldsc$upper_liability_h2_ldsc <- h2_ldsc$`Liability h2 (LDSC)` + h2_ldsc$s.e....6
+
+head(h2_ldsc)
+```
+
+```{r}
+h2_ldsc_p <- ggplot(h2_ldsc, aes(xmin = lower_h2_ldsc, xmax = upper_h2_ldsc, y = dataset, x = `h2 (LDSC)`)) +
+  geom_point(size = 3, shape = 16, color = "#5B79FB", alpha = 0.7) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "#5B79FB", alpha = 0.5) +  # 绘制误差条形
+  labs(x = "h2 (LDSC)", y = "Datasets") +  # 添加标签
+  ggtitle("Comparison of h2 (LDSC)") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+ggsave("Comparison of h2 (LDSC).png", h2_ldsc_p, width = 10, height = 8)
+```
+
+```{r}
+Liability_h2_ldsc_p <- ggplot(h2_ldsc, aes(xmin = lower_liability_h2_ldsc, xmax = upper_liability_h2_ldsc, y = dataset, x = `Liability h2 (LDSC)`)) +
+  geom_point(size = 3, shape = 16, color = "#5B79FB", alpha = 0.7) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "#5B79FB", alpha = 0.5) +  # 绘制误差条形
+  labs(x = "Liability h2 (LDSC)", y = "Datasets") +  # 添加标签
+  ggtitle("Comparison of Liability h2 (LDSC)") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+ggsave("Comparison of Liability h2 (LDSC).png", Liability_h2_ldsc_p, width = 10, height = 8)
+```
+
+### Comparison of h2, S, and Pi (SBayesS)
+
+```{r}
+SBayesS <- read_xlsx("240711_Raw_data_for_R1.xlsx")
+```
+
+```{r}
+head(SBayesS)
+```
+
+```{r}
+SBayesS$lower_h2 <- SBayesS$`h2 (SBayesS)` - SBayesS$s.e....5
+SBayesS$upper_h2 <- SBayesS$`h2 (SBayesS)` + SBayesS$s.e....5
+SBayesS$lower_S <- SBayesS$`The mean effect size of the SNPs (S)` - SBayesS$s.e....7
+SBayesS$upper_S <- SBayesS$`The mean effect size of the SNPs (S)` + SBayesS$s.e....7
+SBayesS$lower_Pi <- SBayesS$`The proportion of non-zero SNP effects (Pi)` - SBayesS$s.e....9
+SBayesS$upper_Pi <- SBayesS$`The proportion of non-zero SNP effects (Pi)` + SBayesS$s.e....9
+
+head(SBayesS)
+```
+
+```{r}
+h2_sbayess_p <- ggplot(SBayesS, aes(xmin = lower_h2, xmax = upper_h2, y = dataset, x = `h2 (SBayesS)`)) +
+  geom_point(size = 3, shape = 16, color = "#5B79FB", alpha = 0.7) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "#5B79FB", alpha = 0.5) +  # 绘制误差条形
+  labs(x = "h2 (SBayesS)", y = "Datasets") +  # 添加标签
+  ggtitle("Comparison of h2 (SBayesS)") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+ggsave("Comparison of h2 (SBayesS).png", h2_sbayess_p, width = 10, height = 8)
+```
+
+```{r}
+S_sbayess_p <- ggplot(SBayesS, aes(xmin = lower_S, xmax = upper_S, y = dataset, x = `The mean effect size of the SNPs (S)`)) +
+  geom_point(size = 3, shape = 16, color = "#5B79FB", alpha = 0.7) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "#5B79FB", alpha = 0.5) +  # 绘制误差条形
+  labs(x = "The mean effect size of the SNPs (S)", y = "Datasets") +  # 添加标签
+  ggtitle("Comparison of the mean effect size of the SNPs (S)") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+ggsave("Comparison of the mean effect size of the SNPs (S).png", S_sbayess_p, width = 10, height = 8)
+```
+
+```{r}
+Pi_sbayess_p <- ggplot(SBayesS, aes(xmin = lower_Pi, xmax = upper_Pi, y = dataset, x = `The proportion of non-zero SNP effects (Pi)`)) +
+  geom_point(size = 3, shape = 16, color = "#5B79FB", alpha = 0.7) +  # 绘制均值点
+  geom_errorbarh(height = 0, color = "#5B79FB", alpha = 0.5) +  # 绘制误差条形
+  labs(x = "The proportion of non-zero SNP effects (Pi)", y = "Datasets") +  # 添加标签
+  ggtitle("Comparison of the proportion of non-zero SNP effects (Pi)") +  # 添加标题
+  theme_minimal()  # 使用简约主题
+ggsave("Comparison of the proportion of non-zero SNP effects (Pi).png", Pi_sbayess_p, width = 10, height = 8)
+```
