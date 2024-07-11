@@ -9,4 +9,11 @@
 *.ma
 *.zip
 *.tbi
-
+*.log
+eur_ld_chr/
+eur_ld_chr_notgood/
+GeneAtlas/
+ldsc_tutorial/
+*.badSNPlist
+*.parRes
+*.snpRes
