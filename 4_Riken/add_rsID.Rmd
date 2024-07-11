@@ -1,0 +1,101 @@
+---
+title: "add_rsID"
+author: "Zichong Liu"
+date: "2024-07-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Input the GWAS summary statistics
+
+```{r}
+library(data.table)
+library(SNPlocs.Hsapiens.dbSNP144.GRCh37)
+library(BSgenome)
+```
+
+```{r}
+# input the GWAS summary statistics
+Riken_no_rsID <- fread("Riken.txt", sep = " ")
+
+```
+
+### Here is the tutorial
+
+```{r}
+## fake GRanges - you need to use your Chr and bp columns to do this!
+## also note that the chromosomes have no prepended 'chr'.
+
+fakeo <- GRanges(rep("1", 500), IRanges(sample(1:1e5, 500), width = 1))
+z <- snpsByOverlaps(SNPlocs.Hsapiens.dbSNP144.GRCh37, fakeo)
+z
+```
+
+```{r}
+fo <- findOverlaps(fakeo, z)
+fo
+```
+
+```{r}
+mcols(fakeo)$rsid <- NA
+mcols(fakeo)$rsid[queryHits(fo)] <- mcols(z)$RefSNP_id[subjectHits(fo)]
+fakeo
+```
+
+### The following are for Riken
+
+```{r}
+# Creating GRanges Objects
+Riken <- GRanges(
+  seqnames = Rle(Riken_no_rsID$CHR), # chr to seqnames
+  ranges = IRanges(start = Riken_no_rsID$POS, width = 1) # pos to ranges
+)
+# other column
+mcols(Riken) <- Riken_no_rsID[, !c("CHR", "POS"), with = FALSE]
+print(Riken)
+```
+
+```{r}
+# Matching the rsID
+Riken_z <- snpsByOverlaps(SNPlocs.Hsapiens.dbSNP144.GRCh37, Riken)
+Riken_z
+```
+
+```{r}
+# Find the overlap
+Riken_fo <- findOverlaps(Riken, Riken_z)
+Riken_fo
+```
+
+```{r}
+# Add the rsID to the original GWAS summary statistics
+mcols(Riken)$rsid <- NA
+mcols(Riken)$rsid[queryHits(Riken_fo)] <- mcols(Riken_z)$RefSNP_id[subjectHits(Riken_fo)]
+Riken
+```
+
+### Output the GWAS summary statistics
+
+```{r}
+# Converting GRanges Objects to Data Frames
+Riken_df <- as.data.frame(Riken)
+Riken_df
+```
+
+```{r}
+# Select and rename columns
+Riken_df <- data.frame(
+    chr = Riken_df$seqnames,
+    bp = Riken_df$start,
+    Riken_df[, setdiff(names(Riken_df), c("seqnames", "start", "end", "width", "strand"))]
+)
+Riken_df
+```
+
+```{r}
+# Export dataframe as TSV file
+write.table(Riken_df, "Riken_rsID.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+```
