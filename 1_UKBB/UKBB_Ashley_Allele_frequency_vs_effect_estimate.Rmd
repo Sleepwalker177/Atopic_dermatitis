@@ -1,0 +1,41 @@
+---
+title: "UKBB Ashley Allele frequency vs effect estimate"
+author: "Zichong Liu"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+UKBB_Ashley <- fread("UKBB_Ashley.tsv")
+```
+
+```{r}
+UKBB_Ashley_sorted <- UKBB_Ashley[order(UKBB_Ashley$BETA,decreasing = T), ]
+head(UKBB_Ashley_sorted, 20)
+```
+
+```{r}
+UKBB_Ashley_head <- head(UKBB_Ashley_sorted, 20)
+write.xlsx(UKBB_Ashley_head, "UKBB_Ashley_head.xlsx")
+```
+
+```{r}
+# Scatterplotting with ggplot2
+UKBB_Ashley_p <- ggplot(UKBB_Ashley, aes(x = EAF, y = BETA)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Allele Frequency vs. Effect Estimate for UKBB_Ashley",
+       x = "Allele Frequency",
+       y = "Effect Estimate") +
+  theme_minimal()
+ggsave("Allele Frequency vs. Effect Estimate for UKBB_Ashley.png", UKBB_Ashley_p, width = 10, height = 8)
+```

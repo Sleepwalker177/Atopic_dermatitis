@@ -1,0 +1,45 @@
+---
+title: "Riken Allele frequency vs effect estimate"
+author: "Zichong Liu"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+Riken <- fread("AD.auto.rsq07.mac10.tsv")
+```
+
+```{r}
+Riken_sorted <- Riken[order(Riken$BETA,decreasing = T), ]
+head(Riken_sorted, 20)
+```
+
+```{r}
+Riken_head <- head(Riken_sorted, 20)
+write.xlsx(Riken_head, "Riken_head.xlsx")
+```
+
+```{r}
+head(Riken)
+```
+
+```{r}
+# Scatterplotting with ggplot2
+Riken_p <- ggplot(Riken, aes(x = AF_Allele2, y = BETA)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Allele Frequency vs. Effect Estimate for Riken",
+       x = "Allele Frequency",
+       y = "Effect Estimate") +
+  theme_minimal()
+ggsave("Allele Frequency vs. Effect Estimate for Riken.png", Riken_p, width = 10, height = 8)
+```

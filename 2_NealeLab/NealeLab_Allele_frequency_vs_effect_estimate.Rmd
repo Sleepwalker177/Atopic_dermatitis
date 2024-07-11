@@ -1,0 +1,45 @@
+---
+title: "Neale Lab Allele frequency vs effect estimate"
+author: "Zichong Liu"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+NealeLab <- fread("NealeLab_rsID_2.tsv")
+```
+
+```{r}
+NealeLab_sorted <- NealeLab[order(NealeLab$beta,decreasing = T), ]
+head(NealeLab_sorted, 20)
+```
+
+```{r}
+NealeLab_head <- head(NealeLab_sorted, 20)
+write.xlsx(NealeLab_head, "NealeLab_head.xlsx")
+```
+
+```{r}
+head(NealeLab)
+```
+
+```{r}
+# Scatterplotting with ggplot2
+NealeLab_p <- ggplot(NealeLab, aes(x = minor_AF, y = beta)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Allele Frequency vs. Effect Estimate for Neale Lab",
+       x = "Allele Frequency",
+       y = "Effect Estimate") +
+  theme_minimal()
+ggsave("Allele Frequency vs. Effect Estimate for Neale Lab.png", NealeLab_p, width = 10, height = 8)
+```

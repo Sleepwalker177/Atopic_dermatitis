@@ -1,0 +1,47 @@
+---
+title: "FinnGenAllele frequency vs effect estimate"
+author: "Zichong Liu"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+FinnGen <- fread("summary_stats_finngen_R10_L12_ATOPIC.tsv")
+```
+
+```{r}
+FinnGen_sorted <- FinnGen[order(FinnGen$beta,decreasing = T), ]
+head(FinnGen_sorted, 20)
+```
+
+```{r}
+FinnGen_head <- head(FinnGen_sorted, 20)
+write.xlsx(FinnGen_head, "FinnGen_head.xlsx")
+```
+
+```{r}
+head(FinnGen)
+```
+
+```{r}
+# Scatterplotting with ggplot2
+FinnGen_p <- ggplot(FinnGen, aes(x = af_alt, y = beta)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Allele Frequency vs. Effect Estimate for FinnGen",
+       x = "Allele Frequency",
+       y = "Effect Estimate") +
+  theme_minimal()
+ggsave("Allele Frequency vs. Effect Estimate for FinnGen.png", FinnGen_p, width = 10, height = 8)
+```
+
+#hi
