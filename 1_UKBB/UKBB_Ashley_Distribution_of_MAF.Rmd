@@ -1,0 +1,46 @@
+---
+title: "UKBB_Ashley_Distribution of MAF"
+author: "Zichong Liu"
+date: "2024-07-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+UKBB_Ashley <- fread("UKBB_Ashley.tsv")
+```
+
+```{r}
+head(UKBB_Ashley)
+```
+
+### Derive the top 100 SNPs with the smallest MAFs
+
+```{r}
+UKBB_Ashley_sorted <- UKBB_Ashley[order(UKBB_Ashley$MAF, decreasing = F), ]
+head(UKBB_Ashley_sorted, 20)
+```
+
+```{r}
+UKBB_Ashley_head_MAF <- head(UKBB_Ashley_sorted, 100)
+write.xlsx(UKBB_Ashley_head_MAF, "UKBB_Ashley_head_MAF.xlsx")
+```
+
+### Plot the histogram of the MAF distribution
+
+```{r}
+UKBB_Ashley_p <- ggplot(UKBB_Ashley, aes(x = MAF)) +
+  geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
+  labs(title = "Histogram of MAF distribution for UKBB_Ashley", x = "MAF", y = "Frequency of MAF") +
+  theme_minimal()
+ggsave("Histogram of MAF distribution for UKBB_Ashley.png", UKBB_Ashley_p, width = 10, height = 8)
+```

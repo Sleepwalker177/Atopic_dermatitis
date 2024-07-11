@@ -1,0 +1,46 @@
+---
+title: "FinnGen Distribution of MAF"
+author: "Zichong Liu"
+date: "2024-07-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+FinnGen <- fread("FinnGen.tsv")
+```
+
+```{r}
+head(FinnGen)
+```
+
+### Derive the top 100 SNPs with the smallest MAFs
+
+```{r}
+FinnGen_sorted <- FinnGen[order(FinnGen$af_alt, decreasing = F), ]
+head(FinnGen_sorted, 20)
+```
+
+```{r}
+FinnGen_head_MAF <- head(FinnGen_sorted, 100)
+write.xlsx(FinnGen_head_MAF, "FinnGen_head_MAF.xlsx")
+```
+
+### Plot the histogram of the MAF distribution
+
+```{r}
+FinnGen_p <- ggplot(FinnGen, aes(x = af_alt)) +
+  geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
+  labs(title = "Histogram of MAF distribution for FinnGen", x = "MAF", y = "Frequency of MAF") +
+  theme_minimal()
+ggsave("Histogram of MAF distribution for FinnGen.png", FinnGen_p, width = 10, height = 8)
+```

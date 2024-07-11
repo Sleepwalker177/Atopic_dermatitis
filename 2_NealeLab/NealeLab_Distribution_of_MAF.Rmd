@@ -1,0 +1,46 @@
+---
+title: "NealeLab Distribution of MAF"
+author: "Zichong Liu"
+date: "2024-07-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+NealeLab <- fread("NealeLab_rsID_2.tsv")
+```
+
+```{r}
+head(NealeLab)
+```
+
+### Derive the top 100 SNPs with the smallest MAFs
+
+```{r}
+NealeLab_sorted <- NealeLab[order(NealeLab$minor_AF, decreasing = F), ]
+head(NealeLab_sorted, 20)
+```
+
+```{r}
+NealeLab_head_MAF <- head(NealeLab_sorted, 100)
+write.xlsx(NealeLab_head_MAF, "NealeLab_head_MAF.xlsx")
+```
+
+### Plot the histogram of the MAF distribution
+
+```{r}
+NealeLab_p <- ggplot(NealeLab, aes(x = minor_AF)) +
+  geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
+  labs(title = "Histogram of MAF distribution for NealeLab", x = "MAF", y = "Frequency of MAF") +
+  theme_minimal()
+ggsave("Histogram of MAF distribution for NealeLab.png", NealeLab_p, width = 10, height = 8)
+```
