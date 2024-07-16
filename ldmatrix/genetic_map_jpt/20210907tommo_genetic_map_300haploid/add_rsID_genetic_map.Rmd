@@ -1,0 +1,94 @@
+---
+title: "add rsID for genetic map"
+author: "Zichong Liu"
+date: "2024-07-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Input the GWAS summary statistics
+
+```{r}
+library(data.table)
+library(SNPlocs.Hsapiens.dbSNP144.GRCh37)
+library(BSgenome)
+```
+
+### Here is the tutorial
+
+```{r}
+## fake GRanges - you need to use your Chr and bp columns to do this!
+## also note that the chromosomes have no prepended 'chr'.
+
+fakeo <- GRanges(rep("1", 500), IRanges(sample(1:1e5, 500), width = 1))
+z <- snpsByOverlaps(SNPlocs.Hsapiens.dbSNP144.GRCh37, fakeo)
+z
+```
+
+```{r}
+fo <- findOverlaps(fakeo, z)
+fo
+```
+
+```{r}
+mcols(fakeo)$rsid <- NA
+mcols(fakeo)$rsid[queryHits(fo)] <- mcols(z)$RefSNP_id[subjectHits(fo)]
+fakeo
+```
+
+### Automated run matching 22 chromosomes
+
+```{r}
+# Define the chromosome numbers
+chromosomes <- 1:22
+
+# Define the output directory
+output_dir <- "../genetic_map_tommo_GRCh37_rsID_chr"
+
+# Loop over each chromosome file
+for (chr in chromosomes) {
+  # Construct the file name
+  file_name <- paste0("genetic_map_tommo_GRCh37_chr", chr, "_bp5.txt")
+  output_file_name <- paste0(output_dir, "/Riken_rsID_chr", chr, ".tsv")
+  
+  # Input the GWAS summary statistics
+  Riken_no_rsID <- fread(file_name, sep = "\t")
+  
+  # Replace Chromosome column values
+  Riken_no_rsID$Chromosome <- gsub(paste0("chr", chr), as.character(chr), Riken_no_rsID$Chromosome)
+  
+  # Creating GRanges Objects
+  Riken <- GRanges(
+    seqnames = Rle(Riken_no_rsID$Chromosome), # chr to seqnames
+    ranges = IRanges(start = Riken_no_rsID$`Position(bp)`, width = 1) # pos to ranges
+  )
+  # other column
+  mcols(Riken) <- Riken_no_rsID[, !c("Chromosome", "Position(bp)"), with = FALSE]
+  
+  # Matching the rsID
+  Riken_z <- snpsByOverlaps(SNPlocs.Hsapiens.dbSNP144.GRCh37, Riken)
+  
+  # Find the overlap
+  Riken_fo <- findOverlaps(Riken, Riken_z)
+  
+  # Add the rsID to the original GWAS summary statistics
+  mcols(Riken)$rsid <- NA
+  mcols(Riken)$rsid[queryHits(Riken_fo)] <- mcols(Riken_z)$RefSNP_id[subjectHits(Riken_fo)]
+  
+  # Converting GRanges Objects to Data Frames
+  Riken_df <- as.data.frame(Riken)
+  
+  # Select and rename columns
+  Riken_df <- data.frame(
+    rsid = Riken_df$rsid,
+    bp = Riken_df$start,
+    Map.cM = Riken_df$Map.cM
+  )
+  
+  # Export dataframe as TSV file
+  write.table(Riken_df, output_file_name, sep = "\t", row.names = FALSE, quote = FALSE, col.names = FALSE)
+}
+```
