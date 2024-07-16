@@ -52,7 +52,7 @@ output_dir <- "../genetic_map_tommo_GRCh37_rsID_chr"
 for (chr in chromosomes) {
   # Construct the file name
   file_name <- paste0("genetic_map_tommo_GRCh37_chr", chr, "_bp5.txt")
-  output_file_name <- paste0(output_dir, "/Riken_rsID_chr", chr, ".tsv")
+  output_file_name <- paste0(output_dir, "/genetic_map_tommo_GRCh37_rsID_chr", chr, ".tsv")
   
   # Input the GWAS summary statistics
   Riken_no_rsID <- fread(file_name, sep = "\t")
