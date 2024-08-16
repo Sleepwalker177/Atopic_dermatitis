@@ -1,0 +1,357 @@
+---
+citt--
+title: "Comparison of results between four databases (grouped)"
+author: "Zichong Liu"
+date: "2024-07-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+```
+
+# SBayesS
+
+```{r}
+SBayesS <- read_xlsx("240802_Final_data_SBayesS.xlsx")
+head(SBayesS)
+```
+
+```{r}
+SBayesS$lower_h2_lia <- SBayesS$h2_lia - SBayesS$sd_h2_lia
+SBayesS$upper_h2_lia <- SBayesS$h2_lia + SBayesS$sd_h2_lia
+SBayesS$lower_S <- SBayesS$S - SBayesS$sd_S
+SBayesS$upper_S <- SBayesS$S + SBayesS$sd_S
+SBayesS$lower_Pi <- SBayesS$Pi - SBayesS$sd_Pi
+SBayesS$upper_Pi <- SBayesS$Pi + SBayesS$sd_Pi
+
+head(SBayesS)
+```
+
+## MAF QC is null
+
+```{r}
+SBayesS_maf_null <- SBayesS %>%
+  filter(`MAF Quality Control` == "null")
+
+# for h2
+h2_maf_null_sbayess_p <- ggplot(SBayesS_maf_null, aes(ymin = lower_h2_lia, ymax = upper_h2_lia, x = dataset, y = h2_lia, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "h2", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of h2") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.5)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of h2.png", h2_maf_null_sbayess_p, width = 10, height = 8)
+
+
+# for S
+S_maf_null_sbayess_p <- ggplot(SBayesS_maf_null, aes(ymin = lower_S, ymax = upper_S, x = dataset, y = S, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "S", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of S") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_reverse(limits = c(0, -2)) +  # 反转 y 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of S.png", S_maf_null_sbayess_p, width = 10, height = 8)
+
+# for Pi
+Pi_maf_null_sbayess_p <- ggplot(SBayesS_maf_null, aes(ymin = lower_Pi, ymax = upper_Pi, x = dataset, y = Pi, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "Pi", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of Pi") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.01)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of Pi.png", Pi_maf_null_sbayess_p, width = 10, height = 8)
+```
+
+## MAF QC is \>0.001
+
+```{r}
+SBayesS_maf_0.001 <- SBayesS %>%
+  filter(`MAF Quality Control` == "> 0.001")
+
+# for h2
+h2_maf_0.001_sbayess_p <- ggplot(SBayesS_maf_0.001, aes(ymin = lower_h2_lia, ymax = upper_h2_lia, x = dataset, y = h2_lia, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "h2", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of h2 (MAF > 0.001)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.5)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of h2 MAF 0.001.png", h2_maf_0.001_sbayess_p, width = 10, height = 8)
+
+
+# for S
+S_maf_0.001_sbayess_p <- ggplot(SBayesS_maf_0.001, aes(ymin = lower_S, ymax = upper_S, x = dataset, y = S, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "S", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of S (MAF > 0.001)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_reverse(limits = c(0, -2)) +  # 反转 y 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of S MAF 0.001.png", S_maf_0.001_sbayess_p, width = 10, height = 8)
+
+# for Pi
+Pi_maf_0.001_sbayess_p <- ggplot(SBayesS_maf_0.001, aes(ymin = lower_Pi, ymax = upper_Pi, x = dataset, y = Pi, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "Pi", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of Pi (MAF > 0.001)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.01)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of Pi MAF 0.001.png", Pi_maf_0.001_sbayess_p, width = 10, height = 8)
+```
+
+## MAF QC is \>0.01
+
+```{r}
+SBayesS_maf_0.01 <- SBayesS %>%
+  filter(`MAF Quality Control` == "> 0.01")
+
+# for h2
+h2_maf_0.01_sbayess_p <- ggplot(SBayesS_maf_0.01, aes(ymin = lower_h2_lia, ymax = upper_h2_lia, x = dataset, y = h2_lia, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "h2", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of h2 (MAF > 0.01)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.5)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of h2 MAF 0.01.png", h2_maf_0.01_sbayess_p, width = 10, height = 8)
+
+
+# for S
+S_maf_0.01_sbayess_p <- ggplot(SBayesS_maf_0.01, aes(ymin = lower_S, ymax = upper_S, x = dataset, y = S, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "S", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of S (MAF > 0.01)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_reverse(limits = c(0, -2)) +  # 反转 y 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of S MAF 0.01.png", S_maf_0.01_sbayess_p, width = 10, height = 8)
+
+# for Pi
+Pi_maf_0.01_sbayess_p <- ggplot(SBayesS_maf_0.01, aes(ymin = lower_Pi, ymax = upper_Pi, x = dataset, y = Pi, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "Pi", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of Pi (MAF > 0.01)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.01)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of Pi MAF 0.01.png", Pi_maf_0.01_sbayess_p, width = 10, height = 8)
+```
+
+## MAF QC is \>0.05
+
+```{r}
+SBayesS_maf_0.05 <- SBayesS %>%
+  filter(`MAF Quality Control` == "> 0.05")
+
+# for h2
+h2_maf_0.05_sbayess_p <- ggplot(SBayesS_maf_0.05, aes(ymin = lower_h2_lia, ymax = upper_h2_lia, x = dataset, y = h2_lia, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "h2", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of h2 (MAF > 0.05)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.5)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of h2 MAF 0.05.png", h2_maf_0.05_sbayess_p, width = 10, height = 8)
+
+
+# for S
+S_maf_0.05_sbayess_p <- ggplot(SBayesS_maf_0.05, aes(ymin = lower_S, ymax = upper_S, x = dataset, y = S, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "S", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of S (MAF > 0.05)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_reverse(limits = c(0, -2)) +  # 反转 y 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of S MAF 0.05.png", S_maf_0.05_sbayess_p, width = 10, height = 8)
+
+# for Pi
+Pi_maf_0.05_sbayess_p <- ggplot(SBayesS_maf_0.05, aes(ymin = lower_Pi, ymax = upper_Pi, x = dataset, y = Pi, color = dataset, shape = MHC)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "Pi", x = "Dataset", color = "Dataset", shape = "MHC Inclusion") +  # 添加标签和图例标题
+  ggtitle("Comparison of Pi (MAF > 0.05)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.01)) +  # 设置 x 轴范围
+  scale_color_manual(values = c("UKBB IEU (excl. MHC)" = "#5B79FB", "UKBB IEU (incl. MHC)" = "#5B79FB", "UKBB Neale Lab (excl. MHC)" = "#FF6347", "UKBB Neale Lab (incl. MHC)" = "#FF6347", "FinnGen (excl. MHC)" = "#3CB371", "FinnGen (incl. MHC)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("MHC excluded" = 16, "MHC included" = 17))  # 设置形状
+ggsave("Comparison of Pi MAF 0.05.png", Pi_maf_0.05_sbayess_p, width = 10, height = 8)
+```
+
+# LDSC
+
+```{r}
+LDSC <- read_xlsx("240802_Final_data_ldsc.xlsx")
+head(LDSC)
+```
+
+```{r}
+LDSC$lower_h2 <- LDSC$h2 - LDSC$sd_h2
+LDSC$upper_h2 <- LDSC$h2 + LDSC$sd_h2
+
+head(LDSC)
+```
+
+```{r}
+# for h2
+h2_LDSC_p <- ggplot(LDSC, aes(ymin = lower_h2, ymax = upper_h2, x = dataset, y = h2, color = dataset, shape = Scale)) +
+  geom_point(size = 3, alpha = 0.7) +  # 绘制均值点
+  geom_errorbar(width = 0.2, alpha = 0.5) +  # 绘制误差条形
+  labs(y = "h2", x = "Dataset", color = "Dataset", shape = "Scale") +  # 添加标签和图例标题
+  ggtitle("Comparison of h2 (LDSC)") +  # 添加标题
+  theme_minimal() +  # 使用简约主题
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 18),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 18),  # y 轴标题字体大小
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 16),  # y 轴坐标字体大小
+        legend.title = element_text(size = 18),  # 图例标题字体大小
+        legend.text = element_text(size = 16),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 70)  # 调整图的边距，左边距更宽
+        ) +  # 图例文字字体大小
+  scale_y_continuous(limits = c(0, 0.5)) +  # 设置 y 轴范围
+  scale_color_manual(values = c("UKBB IEU (Obs)" = "#5B79FB", "UKBB IEU (Lia)" = "#5B79FB", "UKBB Neale Lab (Obs)" = "#FF6347", "UKBB Neale Lab (Lia)" = "#FF6347", "FinnGen (Obs)" = "#3CB371", "FinnGen (Lia)" = "#3CB371")) +  # 设置颜色
+  scale_shape_manual(values = c("Observation scale" = 16, "Liability scale" = 17))  # 设置形状
+ggsave("Comparison of h2 LDSC.png", h2_LDSC_p, width = 14, height = 8)
+
+```
