@@ -1,0 +1,381 @@
+---
+title: "Functional annotation plots UKBB_NealeLab"
+author: "Zichong Liu"
+date: "2024-07-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# 加载必要的包
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+```
+
+### h2 vs S With MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment") %>%
+  arrange(desc(Mean))
+UKBB_NealeLab_merged_h2vsS <- UKBB_NealeLab_h2_enrichment$Annotation
+UKBB_NealeLab_S_Stratified <- UKBB_NealeLab %>%
+  filter(Category == "S_Stratified", Annotation %in% UKBB_NealeLab_merged_h2vsS)
+
+# 合并数据并按PerSnpHsq_Enrichment的Mean值排序
+UKBB_NealeLab_merged_h2vsS <- merge(UKBB_NealeLab_h2_enrichment, UKBB_NealeLab_S_Stratified, by = "Annotation", suffixes = c("_h2", "_S")) %>%
+  arrange(desc(Mean_h2))
+
+# 生成第一个柱状图，y轴为Mean_h2
+UKBB_NealeLab_p1 <- ggplot(UKBB_NealeLab_merged_h2vsS, aes(x = reorder(Annotation, -Mean_h2), y = Mean_h2)) +
+  geom_bar(stat = "identity", fill = "#5B79FB") +
+  geom_errorbar(aes(ymin = Mean_h2 - SD_h2, ymax = Mean_h2 + SD_h2), width = 0.2, color = "#5B79FB") +
+  labs(x = "Annotation", y = "Fold enrichment in\nper−SNP heritability") +
+  theme(axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # x轴标签倾斜45度
+
+# 生成第二个柱状图，y轴为Mean_S，x轴顺序与h2一致
+UKBB_NealeLab_p2 <- ggplot(UKBB_NealeLab_merged_h2vsS, aes(x = reorder(Annotation, -Mean_h2), y = Mean_S)) +
+  geom_bar(stat = "identity", fill = "#34FFBD") +
+  geom_errorbar(aes(ymin = Mean_S - SD_S, ymax = Mean_S + SD_S), width = 0.2, color = "#34FFBD") +
+  labs(x = "Annotation", y = "Estimated S") +
+  theme(axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # x轴标签倾斜45度
+
+# 将两个图纵向排列
+UKBB_NealeLab_p <- UKBB_NealeLab_p1 / UKBB_NealeLab_p2 +
+  plot_layout(nrow = 2)  # 纵向排列两个图
+
+ggsave("h2 vs S (UKBB Neale Lab incl.).png", UKBB_NealeLab_p, width = 8, height = 5)
+```
+
+### h2 vs S Without MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_null_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment") %>%
+  arrange(desc(Mean))
+UKBB_NealeLab_merged_h2vsS <- UKBB_NealeLab_h2_enrichment$Annotation
+UKBB_NealeLab_S_Stratified <- UKBB_NealeLab %>%
+  filter(Category == "S_Stratified", Annotation %in% UKBB_NealeLab_merged_h2vsS)
+
+# 合并数据并按PerSnpHsq_Enrichment的Mean值排序
+UKBB_NealeLab_merged_h2vsS <- merge(UKBB_NealeLab_h2_enrichment, UKBB_NealeLab_S_Stratified, by = "Annotation", suffixes = c("_h2", "_S")) %>%
+  arrange(desc(Mean_h2))
+
+# 生成第一个柱状图，y轴为Mean_h2
+UKBB_NealeLab_p1 <- ggplot(UKBB_NealeLab_merged_h2vsS, aes(x = reorder(Annotation, -Mean_h2), y = Mean_h2)) +
+  geom_bar(stat = "identity", fill = "#5B79FB") +
+  geom_errorbar(aes(ymin = Mean_h2 - SD_h2, ymax = Mean_h2 + SD_h2), width = 0.2, color = "#5B79FB") +
+  labs(x = "Annotation", y = "Fold enrichment in\nper−SNP heritability") +
+  theme(axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # x轴标签倾斜45度
+
+# 生成第二个柱状图，y轴为Mean_S，x轴顺序与h2一致
+UKBB_NealeLab_p2 <- ggplot(UKBB_NealeLab_merged_h2vsS, aes(x = reorder(Annotation, -Mean_h2), y = Mean_S)) +
+  geom_bar(stat = "identity", fill = "#34FFBD") +
+  geom_errorbar(aes(ymin = Mean_S - SD_S, ymax = Mean_S + SD_S), width = 0.2, color = "#34FFBD") +
+  labs(x = "Annotation", y = "Estimated S") +
+  theme(axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # x轴标签倾斜45度
+
+# 将两个图纵向排列
+UKBB_NealeLab_p <- UKBB_NealeLab_p1 / UKBB_NealeLab_p2 +
+  plot_layout(nrow = 2)  # 纵向排列两个图
+
+ggsave("h2 vs S (UKBB Neale Lab excl.).png", UKBB_NealeLab_p, width = 8, height = 5)
+```
+
+### h2 vs Pi With MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment")
+UKBB_NealeLab_Pi_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "Pi_Enrichment")
+
+# 合并数据
+UKBB_NealeLab_merged_h2vsPi <- merge(UKBB_NealeLab_h2_enrichment, UKBB_NealeLab_Pi_enrichment, by = "Annotation", suffixes = c("_h2", "_Pi"))
+
+UKBB_NealeLab_p <- ggplot(UKBB_NealeLab_merged_h2vsPi, aes(x = Mean_Pi, y = Mean_h2, color = Annotation)) +
+  # 绘制点
+  geom_point(size = 3) +
+  # 添加横向误差棒
+  geom_errorbarh(aes(xmin = Mean_Pi - SD_Pi, 
+                      xmax = Mean_Pi + SD_Pi), 
+                  height = 0) +
+  # 添加纵向误差棒
+  geom_errorbar(aes(ymin = Mean_h2 - SD_h2, 
+                    ymax = Mean_h2 + SD_h2), 
+                width = 0) +  
+  # 添加 x=1 和 y=1 的虚线
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray") +  # x = 1 的虚线
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray") +  # y = 1 的虚线
+  # 添加类别标签
+  geom_text(aes(label = Annotation), 
+            vjust = -1, hjust = 1, 
+            check_overlap = TRUE) +
+  # 设置坐标轴标签和标题
+  labs(x = "Fold enrichment in Polygenicity", 
+       y = "Fold enrichment in per−SNP heritability", 
+       title = "Fold enrichment of per-SNP heritability against\nthat of polygenicity (UKBB Neale Lab incl.)") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  # 调整主题
+  theme_minimal() +
+  theme(legend.position = "none") +  # 去掉图例
+  # 设置自定义颜色
+  scale_color_manual(values = scales::hue_pal()(21))  # 为 21 个不同的 Annotation 设置不同的颜色
+ggsave("Fold enrichment of per-SNP heritability against that of polygenicity (UKBB Neale Lab incl.).png", UKBB_NealeLab_p, width = 6, height = 5)
+cor_h2_Pi <- cor(UKBB_NealeLab_merged_h2vsPi$Mean_h2, UKBB_NealeLab_merged_h2vsPi$Mean_Pi)
+print(cor_h2_Pi)
+```
+
+### h2 vs Pi Without MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_null_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment")
+UKBB_NealeLab_Pi_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "Pi_Enrichment")
+
+# 合并数据
+UKBB_NealeLab_merged_h2vsPi <- merge(UKBB_NealeLab_h2_enrichment, UKBB_NealeLab_Pi_enrichment, by = "Annotation", suffixes = c("_h2", "_Pi"))
+
+UKBB_NealeLab_p <- ggplot(UKBB_NealeLab_merged_h2vsPi, aes(x = Mean_Pi, y = Mean_h2, color = Annotation)) +
+  # 绘制点
+  geom_point(size = 3) +
+  # 添加横向误差棒
+  geom_errorbarh(aes(xmin = Mean_Pi - SD_Pi, 
+                      xmax = Mean_Pi + SD_Pi), 
+                  height = 0) +
+  # 添加纵向误差棒
+  geom_errorbar(aes(ymin = Mean_h2 - SD_h2, 
+                    ymax = Mean_h2 + SD_h2), 
+                width = 0) +  
+  # 添加 x=1 和 y=1 的虚线
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray") +  # x = 1 的虚线
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray") +  # y = 1 的虚线
+  # 添加类别标签
+  geom_text(aes(label = Annotation), 
+            vjust = -1, hjust = 1, 
+            check_overlap = TRUE) +
+  # 设置坐标轴标签和标题
+  labs(x = "Fold enrichment in Polygenicity", 
+       y = "Fold enrichment in per−SNP heritability", 
+       title = "Fold enrichment of per-SNP heritability against\nthat of polygenicity (UKBB Neale Lab excl.)") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  # 调整主题
+  theme_minimal() +
+  theme(legend.position = "none") +  # 去掉图例
+  # 设置自定义颜色
+  scale_color_manual(values = scales::hue_pal()(21))  # 为 21 个不同的 Annotation 设置不同的颜色
+ggsave("Fold enrichment of per-SNP heritability against that of polygenicity (UKBB Neale Lab excl.).png", UKBB_NealeLab_p, width = 6, height = 5)
+cor_h2_Pi <- cor(UKBB_NealeLab_merged_h2vsPi$Mean_h2, UKBB_NealeLab_merged_h2vsPi$Mean_Pi)
+print(cor_h2_Pi)
+```
+
+### Multiple hypothesis tests for h2, Pi, and S with MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出S_Stratified，PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment")
+UKBB_NealeLab_Pi_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "Pi_Enrichment")
+UKBB_NealeLab_S_Stratified <- UKBB_NealeLab %>%
+  filter(Category == "S_Stratified")
+
+# 首先合并 UKBB_NealeLab_h2_enrichment 和 UKBB_NealeLab_Pi_enrichment
+UKBB_NealeLab_merged_t.test <- UKBB_NealeLab_h2_enrichment %>%
+  left_join(UKBB_NealeLab_Pi_enrichment, by = "Annotation", suffix = c("_h2", "_Pi"))
+
+# 然后合并 UKBB_NealeLab_S_Stratified，手动处理后缀以避免对 Annotation 列附加后缀
+UKBB_NealeLab_merged_t.test <- UKBB_NealeLab_merged_t.test %>%
+  left_join(UKBB_NealeLab_S_Stratified %>% rename_with(~ paste0(., "_S"), -Annotation), by = "Annotation")
+
+# 定义假设检验函数
+sample.size <- nrow(UKBB_NealeLab_merged_t.test)
+perform_t_test <- function(value, sd, hypothesized_value = 0) {
+  # 计算 t 统计量
+  t_value <- (value - hypothesized_value) / (sd / sqrt(sample.size)) # 样本量为21
+  # 计算 p 值，假设双尾检验
+  p_value <- 2*pt(-abs(t_value), df = sample.size-1)
+  return(p_value)
+}
+
+# 对每个注释进行 t 检验
+UKBB_NealeLab_t.test <- UKBB_NealeLab_merged_t.test
+
+# 添加 t 检验的 p 值
+UKBB_NealeLab_t.test$p_value_h2 <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_h2, UKBB_NealeLab_merged_t.test$SD_h2)
+UKBB_NealeLab_t.test$p_value_Pi <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_Pi, UKBB_NealeLab_merged_t.test$SD_Pi)
+UKBB_NealeLab_t.test$p_value_S <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_S, UKBB_NealeLab_merged_t.test$SD_S)
+write.xlsx(UKBB_NealeLab_t.test, "UKBB_NealeLab_t.test_mhc.xlsx")
+```
+
+### Multiple hypothesis tests for h2, Pi, and S without MHC
+
+```{r}
+# 指定表头
+col_names <- c("Category", "Annotation", "Mean", "SD", "R_GelmanRubin")
+
+# 读取数据并添加表头
+UKBB_NealeLab <- read.table("gctb_NealeLab_mhc_null_annot_2.parSetRes", header = FALSE, col.names = col_names)
+
+# 去掉 Annotation 列中为 "Intercept" 的行
+UKBB_NealeLab <- UKBB_NealeLab[UKBB_NealeLab$Annotation != "Intercept", ]
+
+# 将 Annotation 列中的字段替换为去掉 "_" 之后的部分
+UKBB_NealeLab$Annotation <- ifelse(
+  grepl("UTR_3_UCSC|UTR_5_UCSC", UKBB_NealeLab$Annotation),
+  sub("_UCSC", "", UKBB_NealeLab$Annotation),    # 对于 UTR_3_UCSC 和 UTR_5_UCSC 替换为 UTR_3 和 UTR_5
+  sub("_.*", "", UKBB_NealeLab$Annotation)        # 对于其他情况，去掉 "_" 之后的字段
+)
+
+# 筛选出S_Stratified，PerSnpHsq_Enrichment和Pi_Enrichment中的Category
+UKBB_NealeLab_h2_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "PerSnpHsq_Enrichment")
+UKBB_NealeLab_Pi_enrichment <- UKBB_NealeLab %>%
+  filter(Category == "Pi_Enrichment")
+UKBB_NealeLab_S_Stratified <- UKBB_NealeLab %>%
+  filter(Category == "S_Stratified")
+
+# 首先合并 UKBB_NealeLab_h2_enrichment 和 UKBB_NealeLab_Pi_enrichment
+UKBB_NealeLab_merged_t.test <- UKBB_NealeLab_h2_enrichment %>%
+  left_join(UKBB_NealeLab_Pi_enrichment, by = "Annotation", suffix = c("_h2", "_Pi"))
+
+# 然后合并 UKBB_NealeLab_S_Stratified，手动处理后缀以避免对 Annotation 列附加后缀
+UKBB_NealeLab_merged_t.test <- UKBB_NealeLab_merged_t.test %>%
+  left_join(UKBB_NealeLab_S_Stratified %>% rename_with(~ paste0(., "_S"), -Annotation), by = "Annotation")
+
+# 定义假设检验函数
+sample.size <- nrow(UKBB_NealeLab_merged_t.test)
+perform_t_test <- function(value, sd, hypothesized_value = 0) {
+  # 计算 t 统计量
+  t_value <- (value - hypothesized_value) / (sd / sqrt(sample.size)) # 样本量为21
+  # 计算 p 值，假设双尾检验
+  p_value <- 2*pt(-abs(t_value), df = sample.size-1)
+  return(p_value)
+}
+
+# 对每个注释进行 t 检验
+UKBB_NealeLab_t.test <- UKBB_NealeLab_merged_t.test
+
+# 添加 t 检验的 p 值
+UKBB_NealeLab_t.test$p_value_h2 <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_h2, UKBB_NealeLab_merged_t.test$SD_h2)
+UKBB_NealeLab_t.test$p_value_Pi <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_Pi, UKBB_NealeLab_merged_t.test$SD_Pi)
+UKBB_NealeLab_t.test$p_value_S <- mapply(perform_t_test, UKBB_NealeLab_merged_t.test$Mean_S, UKBB_NealeLab_merged_t.test$SD_S)
+write.xlsx(UKBB_NealeLab_t.test, "UKBB_NealeLab_t.test_mhc_null.xlsx")
+```
