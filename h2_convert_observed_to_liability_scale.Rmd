@@ -1,0 +1,70 @@
+---
+title: "h2_convert_observed_to_liability_scale"
+author: "Zichong Liu"
+date: "2024-08-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(readxl)
+library(LTFHPlus)
+library(openxlsx)
+```
+
+```{r}
+SBayesS <- read_xlsx("240802_Final_data_SBayesS.xlsx")
+head(SBayesS)
+```
+
+```{r}
+# for Riken
+convert_observed_to_liability_scale(
+obs_h2 = 0.654177,
+pop_prev = 0.12,
+prop_cases = 0.01124808995
+)
+
+convert_observed_to_liability_scale(
+obs_h2 = 0.062968,
+pop_prev = 0.05,
+prop_cases = 0.00001124808995
+)
+
+convert_observed_to_liability_scale(
+obs_h2 = 0.783017,
+pop_prev = 0.12,
+prop_cases = 0.01124808995
+)
+
+convert_observed_to_liability_scale(
+obs_h2 = 0.066818,
+pop_prev = 0.12,
+prop_cases = 0.01124808995
+)
+```
+
+```{r}
+# 定义pop_prev和prop_cases的值
+pop_prev_values <- c("UKBB IEU (excl. MHC)" = 0.055, "UKBB IEU (incl. MHC)" = 0.055, "UKBB Neale Lab (excl. MHC)" = 0.055, "UKBB Neale Lab (incl. MHC)" = 0.055, "FinnGen (excl. MHC)" = 0.219, "FinnGen (incl. MHC)" = 0.219)
+prop_cases_values <- c("UKBB IEU (excl. MHC)" = 0.03007115009, "UKBB IEU (incl. MHC)" = 0.03007115009, "UKBB Neale Lab (excl. MHC)" = 0.02580986374, "UKBB Neale Lab (incl. MHC)" = 0.02580986374, "FinnGen (excl. MHC)" = 0.03978506438, "FinnGen (incl. MHC)" = 0.03978506438)
+
+SBayesS <- SBayesS %>%
+  rowwise() %>%
+  mutate(
+    h2_lia = convert_observed_to_liability_scale(h2, pop_prev_values[dataset], prop_cases_values[dataset]),
+    sd_h2_lia = convert_observed_to_liability_scale(sd_h2, pop_prev_values[dataset], prop_cases_values[dataset]) 
+  ) %>%
+  ungroup()
+
+# 查看结果
+print(SBayesS)
+```
+
+```{r}
+write.xlsx(SBayesS, "240802_Final_data_SBayesS_lia.xlsx")
+```
