@@ -26,7 +26,7 @@ head(FinnGen)
 ### Derive the top 100 SNPs with the smallest MAFs
 
 ```{r}
-FinnGen_sorted <- FinnGen[order(FinnGen$af_alt, decreasing = F), ]
+FinnGen_sorted <- FinnGen[order(FinnGen$MAF, decreasing = F), ]
 head(FinnGen_sorted, 20)
 ```
 
@@ -38,9 +38,83 @@ write.xlsx(FinnGen_head_MAF, "FinnGen_head_MAF.xlsx")
 ### Plot the histogram of the MAF distribution
 
 ```{r}
-FinnGen_p <- ggplot(FinnGen, aes(x = af_alt)) +
+FinnGen <- fread("FinnGen.tsv")
+
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF)) +
   geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
-  labs(title = "Histogram of MAF distribution for FinnGen", x = "MAF", y = "Frequency of MAF") +
+  labs(title = "Histogram of MAF distribution\n(FinnGen)", 
+       x = "MAF", 
+       y = "The number of SNP") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  scale_y_continuous(limits = c(0, 150000), labels = function(x) format(x, scientific = FALSE)) +  # y 轴不使用科学计数法
   theme_minimal()
-ggsave("Histogram of MAF distribution for FinnGen.png", FinnGen_p, width = 10, height = 8)
+ggsave("Histogram of MAF distribution for FinnGen.png", FinnGen_p, width = 6, height = 5)
+```
+
+### MAF \> 0.001
+
+```{r}
+FinnGen <- fread("FinnGen_maf0.001.tsv")
+
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for FinnGen (MAF > 0.001)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for FinnGen (MAF > 0.001).png", FinnGen_p, width = 10, height = 8)
+```
+
+### MAF \> 0.01
+
+```{r}
+FinnGen <- fread("FinnGen_maf0.01.tsv")
+
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for FinnGen (MAF > 0.01)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for FinnGen (MAF > 0.01).png", FinnGen_p, width = 10, height = 8)
+```
+
+### MAF \> 0.05
+
+```{r}
+FinnGen <- fread("FinnGen_maf0.05.tsv")
+
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for FinnGen (MAF > 0.05)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for FinnGen (MAF > 0.05).png", FinnGen_p, width = 10, height = 8)
+```
+
+### Histogram MAF \> 0.001
+
+```{r}
+FinnGen <- fread("FinnGen_maf0.001.tsv")
+
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF)) +
+  geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
+  labs(title = "Histogram of MAF distribution for FinnGen (MAF > 0.001)", x = "MAF", y = "The number of SNP") +
+  theme_minimal()
+
+ggsave("Histogram of MAF distribution for FinnGen MAF 0.001.png", FinnGen_p, width = 10, height = 8)
 ```

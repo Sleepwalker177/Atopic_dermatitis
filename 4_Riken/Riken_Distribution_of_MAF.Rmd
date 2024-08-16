@@ -16,7 +16,7 @@ library(ggplot2)
 
 ```{r}
 # Importing data using the fread function of the data.table package
-Riken <- fread("Riken_rsID.tsv")
+Riken <- fread("Riken.tsv")
 ```
 
 ```{r}
@@ -26,7 +26,7 @@ head(Riken)
 ### Derive the top 100 SNPs with the smallest MAFs
 
 ```{r}
-Riken_sorted <- Riken[order(Riken$AF_Allele2, decreasing = F), ]
+Riken_sorted <- Riken[order(Riken$MAF, decreasing = F), ]
 head(Riken_sorted, 20)
 ```
 
@@ -38,9 +38,79 @@ write.xlsx(Riken_head_MAF, "Riken_head_MAF.xlsx")
 ### Plot the histogram of the MAF distribution
 
 ```{r}
-Riken_p <- ggplot(Riken, aes(x = AF_Allele2)) +
+Riken_p <- ggplot(Riken, aes(x = MAF)) +
   geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
-  labs(title = "Histogram of MAF distribution for Riken", x = "MAF", y = "Frequency of MAF") +
+  labs(title = "Histogram of MAF distribution\n(Riken)", x = "MAF", y = "The number of SNP") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  scale_y_continuous(limits = c(0, 40000), labels = function(x) format(x, scientific = FALSE)) +  # y 轴不使用科学计数法
   theme_minimal()
-ggsave("Histogram of MAF distribution for Riken.png", Riken_p, width = 10, height = 8)
+ggsave("Histogram of MAF distribution for Riken.png", Riken_p, width = 6, height = 5)
+```
+
+### MAF \> 0.001
+
+```{r}
+Riken <- fread("Riken_maf0.001.tsv")
+
+Riken_p <- ggplot(Riken, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for Riken (MAF > 0.001)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for Riken (MAF > 0.001).png", Riken_p, width = 10, height = 8)
+```
+
+### MAF \> 0.01
+
+```{r}
+Riken <- fread("Riken_maf0.01.tsv")
+
+Riken_p <- ggplot(Riken, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for Riken (MAF > 0.01)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for Riken (MAF > 0.01).png", Riken_p, width = 10, height = 8)
+```
+
+### MAF \> 0.05
+
+```{r}
+Riken <- fread("Riken_maf0.05.tsv")
+
+Riken_p <- ggplot(Riken, aes(x = MAF)) +
+  geom_density(color = "#5B79FB", alpha = 0.6) +
+  scale_y_log10(breaks = c(0, 5, 10, 15, 20, 25, 30, 35)) +  
+  coord_cartesian(ylim = c(0.5, 30), xlim = c(0, 0.5)) +  # Setting the y-axis range
+  labs(title = "Density Plot of MAF distribution for Riken (MAF > 0.05)", 
+       x = "MAF", 
+       y = "The number of SNPs (Log Scale)") +
+  theme_minimal()
+
+ggsave("Density Plot of MAF distribution for Riken (MAF > 0.05).png", Riken_p, width = 10, height = 8)
+```
+
+### Histogram MAF \> 0.001
+
+```{r}
+Riken <- fread("Riken_maf0.001.tsv")
+
+Riken_p <- ggplot(Riken, aes(x = MAF)) +
+  geom_histogram(binwidth = 0.0001, fill = "#5B79FB", color = "#5B79FB", alpha = 1.0) +
+  labs(title = "Histogram of MAF distribution for Riken (MAF > 0.001)", x = "MAF", y = "The number of SNP") +
+  theme_minimal()
+
+ggsave("Histogram of MAF distribution for Riken MAF 0.001.png", Riken_p, width = 10, height = 8)
 ```
