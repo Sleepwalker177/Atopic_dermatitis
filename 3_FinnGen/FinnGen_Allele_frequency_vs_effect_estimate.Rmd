@@ -1,5 +1,5 @@
 ---
-title: "FinnGenAllele frequency vs effect estimate"
+title: "FinnGen MAF vs effect estimate"
 author: "Zichong Liu"
 date: "2024-06-12"
 output: html_document
@@ -16,7 +16,7 @@ library(ggplot2)
 
 ```{r}
 # Importing data using the fread function of the data.table package
-FinnGen <- fread("summary_stats_finngen_R10_L12_ATOPIC.tsv")
+FinnGen <- fread("FinnGen_maf_beta.tsv")
 ```
 
 ```{r}
@@ -35,13 +35,35 @@ head(FinnGen)
 
 ```{r}
 # Scatterplotting with ggplot2
-FinnGen_p <- ggplot(FinnGen, aes(x = af_alt, y = beta)) +
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF, y = beta)) +
   geom_point(alpha = 0.6, col = "#5B79FB") +
-  labs(title = "Allele Frequency vs. Effect Estimate for FinnGen",
-       x = "Allele Frequency",
-       y = "Effect Estimate") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(FinnGen)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
   theme_minimal()
-ggsave("Allele Frequency vs. Effect Estimate for FinnGen.png", FinnGen_p, width = 10, height = 8)
+ggsave("Scatter plot of MAF versus effect estimate (FinnGen).png", FinnGen_p, width = 6, height = 5)
 ```
 
-#hi
+```{r}
+# Importing data using the fread function of the data.table package
+FinnGen <- fread("FinnGen_maf0.001_beta.tsv")
+
+# Scatterplotting with ggplot2
+FinnGen_p <- ggplot(FinnGen, aes(x = MAF, y = beta)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(FinnGen, MAF > 0.001)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal()
+ggsave("Scatter plot of MAF versus effect estimate (FinnGen MAF > 0.001).png", FinnGen_p, width = 6, height = 5)
+```

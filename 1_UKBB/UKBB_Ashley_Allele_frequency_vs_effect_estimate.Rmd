@@ -1,5 +1,5 @@
 ---
-title: "UKBB Ashley Allele frequency vs effect estimate"
+title: "UKBB_IEU MAF vs effect estimate"
 author: "Zichong Liu"
 date: "2024-06-12"
 output: html_document
@@ -16,26 +16,54 @@ library(ggplot2)
 
 ```{r}
 # Importing data using the fread function of the data.table package
-UKBB_Ashley <- fread("UKBB_Ashley.tsv")
+UKBB_IEU <- fread("UKBB_Ashley.tsv")
 ```
 
 ```{r}
-UKBB_Ashley_sorted <- UKBB_Ashley[order(UKBB_Ashley$BETA,decreasing = T), ]
-head(UKBB_Ashley_sorted, 20)
+head(UKBB_IEU)
 ```
 
 ```{r}
-UKBB_Ashley_head <- head(UKBB_Ashley_sorted, 20)
-write.xlsx(UKBB_Ashley_head, "UKBB_Ashley_head.xlsx")
+UKBB_IEU_sorted <- UKBB_IEU[order(UKBB_IEU$BETA,decreasing = T), ]
+head(UKBB_IEU_sorted, 20)
+```
+
+```{r}
+UKBB_IEU_head <- head(UKBB_IEU_sorted, 20)
+write.xlsx(UKBB_IEU_head, "UKBB_IEU_head.xlsx")
 ```
 
 ```{r}
 # Scatterplotting with ggplot2
-UKBB_Ashley_p <- ggplot(UKBB_Ashley, aes(x = EAF, y = BETA)) +
+UKBB_IEU_p <- ggplot(UKBB_IEU, aes(x = MAF, y = BETA)) +
   geom_point(alpha = 0.6, col = "#5B79FB") +
-  labs(title = "Allele Frequency vs. Effect Estimate for UKBB_Ashley",
-       x = "Allele Frequency",
-       y = "Effect Estimate") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(UKBB IEU)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
   theme_minimal()
-ggsave("Allele Frequency vs. Effect Estimate for UKBB_Ashley.png", UKBB_Ashley_p, width = 10, height = 8)
+ggsave("Scatter plot of MAF versus effect estimate (UKBB IEU).png", UKBB_IEU_p, width = 6, height = 5)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+UKBB_IEU <- fread("UKBB_maf0.001.tsv")
+
+# Scatterplotting with ggplot2
+UKBB_IEU_p <- ggplot(UKBB_IEU, aes(x = MAF, y = BETA)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(UKBB IEU, MAF > 0.001)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal()
+ggsave("Scatter plot of MAF versus effect estimate (UKBB IEU MAF > 0.001).png", UKBB_IEU_p, width = 6, height = 5)
 ```

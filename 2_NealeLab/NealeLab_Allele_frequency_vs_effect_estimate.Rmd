@@ -1,5 +1,5 @@
 ---
-title: "Neale Lab Allele frequency vs effect estimate"
+title: "Neale Lab MAF vs effect estimate"
 author: "Zichong Liu"
 date: "2024-06-12"
 output: html_document
@@ -37,9 +37,52 @@ head(NealeLab)
 # Scatterplotting with ggplot2
 NealeLab_p <- ggplot(NealeLab, aes(x = minor_AF, y = beta)) +
   geom_point(alpha = 0.6, col = "#5B79FB") +
-  labs(title = "Allele Frequency vs. Effect Estimate for Neale Lab",
-       x = "Allele Frequency",
-       y = "Effect Estimate") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(UKBB Neale Lab)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
   theme_minimal()
-ggsave("Allele Frequency vs. Effect Estimate for Neale Lab.png", NealeLab_p, width = 10, height = 8)
+ggsave("Scatter plot of MAF versus effect estimate (UKBB Neale Lab).png", NealeLab_p, width = 6, height = 5)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+NealeLab <- fread("NealeLab_maf0.001.tsv")
+
+# Scatterplotting with ggplot2
+NealeLab_p <- ggplot(NealeLab, aes(x = minor_AF, y = beta)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(UKBB Neale Lab, MAF > 0.001)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal()
+ggsave("Scatter plot of MAF versus effect estimate (UKBB Neale Lab MAF > 0.001).png", NealeLab_p, width = 6, height = 5)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+NealeLab <- fread("NealeLab_maf0.01.tsv")
+
+# Scatterplotting with ggplot2
+NealeLab_p <- ggplot(NealeLab, aes(x = minor_AF, y = beta)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "MAF vs. Effect Estimate for UKBB Neale Lab (MAF > 0.01)",
+       x = "MAF",
+       y = "Effect Estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal()
+ggsave("MAF vs. Effect Estimate for UKBB Neale Lab (MAF > 0.01).png", NealeLab_p, width = 8, height = 8)
 ```

@@ -1,5 +1,5 @@
 ---
-title: "Riken Allele frequency vs effect estimate"
+title: "Riken MAF vs effect estimate"
 author: "Zichong Liu"
 date: "2024-06-12"
 output: html_document
@@ -16,7 +16,7 @@ library(ggplot2)
 
 ```{r}
 # Importing data using the fread function of the data.table package
-Riken <- fread("AD.auto.rsq07.mac10.tsv")
+Riken <- fread("Riken_maf_beta.tsv")
 ```
 
 ```{r}
@@ -35,11 +35,35 @@ head(Riken)
 
 ```{r}
 # Scatterplotting with ggplot2
-Riken_p <- ggplot(Riken, aes(x = AF_Allele2, y = BETA)) +
+Riken_p <- ggplot(Riken, aes(x = MAF, y = BETA)) +
   geom_point(alpha = 0.6, col = "#5B79FB") +
-  labs(title = "Allele Frequency vs. Effect Estimate for Riken",
-       x = "Allele Frequency",
-       y = "Effect Estimate") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(Riken)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
   theme_minimal()
-ggsave("Allele Frequency vs. Effect Estimate for Riken.png", Riken_p, width = 10, height = 8)
+ggsave("Scatter plot of MAF versus effect estimate (Riken).png", Riken_p, width = 6, height = 5)
+```
+
+```{r}
+# Importing data using the fread function of the data.table package
+Riken <- fread("Riken_maf0.001_beta.tsv")
+
+# Scatterplotting with ggplot2
+Riken_p <- ggplot(Riken, aes(x = MAF, y = BETA)) +
+  geom_point(alpha = 0.6, col = "#5B79FB") +
+  labs(title = "Scatter plot of MAF versus effect estimate\n(Riken, MAF > 0.001)",
+       x = "MAF",
+       y = "Effect estimate") +
+  theme(plot.title = element_text(size = 22),  # 标题居中并设置字体大小
+        axis.title.x = element_text(size = 26),  # x 轴标题字体大小
+        axis.title.y = element_text(size = 26),  # y 轴标题字体大小
+        axis.text.x = element_text(size = 20),  # x 轴坐标字体大小
+        axis.text.y = element_text(size = 20)) +  # y 轴坐标字体大小
+  theme_minimal()
+ggsave("Scatter plot of MAF versus effect estimate (Riken MAF > 0.001).png", Riken_p, width = 6, height = 5)
 ```
